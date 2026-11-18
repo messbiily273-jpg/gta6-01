@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SOLMARA HEAT — Open-World Crime Story</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #0e1420; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; color: #eef1f5; }
+  #app { position: fixed; inset: 0; }
+  canvas.game { display: block; width: 100%; height: 100%; }
+  .hidden { display: none !important; }
+  #status { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  /* HUD */
+  #hud { position: absolute; inset: 0; pointer-events: none; z-index: 4; }
+  #topleft { position: absolute; left: 16px; top: 12px; line-height: 1.45; text-shadow: 0 1px 3px #000; }
+  #money { font-size: 26px; font-weight: 800; color: #8fe388; }
+  #clock { font-size: 14px; color: #cfc9bd; }
+  #missionlabel { font-size: 12px; letter-spacing: 2px; color: #ffb02e; font-weight: 700; }
+  #objective { position: absolute; left: 50%; top: 12px; transform: translateX(-50%); font-size: 15px; font-weight: 600; text-align: center; text-shadow: 0 1px 3px #000; background: rgba(0,0,0,0.45); padding: 6px 14px; border-radius: 4px; max-width: 46vw; }
+  #stars { position: absolute; right: 16px; top: 12px; font-size: 26px; letter-spacing: 4px; text-shadow: 0 1px 3px #000; }
+  #feed { position: absolute; right: 16px; top: 52px; text-align: right; font-size: 13px; line-height: 1.7; text-shadow: 0 1px 2px #000; color: #ffd76a; }
+  #banner { position: absolute; left: 50%; top: 20%; transform: translateX(-50%); text-align: center; opacity: 0; transition: opacity .3s; text-shadow: 0 2px 10px #000; }
+  #bannertitle { font-size: 42px; font-weight: 800; letter-spacing: 3px; }
+  #bannersub { font-size: 16px; color: #ffd76a; margin-top: 6px; }
+  #healthwrap { position: absolute; left: 16px; bottom: 216px; text-shadow: 0 1px 2px #000; }
+  #healthbar { width: 220px; height: 14px; background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.35); }
+  #healthfill { height: 100%; width: 100%; background: #37c8a5; }
+  #healthtxt { font-size: 14px; font-weight: 700; margin-top: 4px; }
+  #minimap { position: absolute; left: 16px; bottom: 16px; width: 190px; height: 190px; border: 2px solid rgba(255,255,255,0.4); background: rgba(0,0,0,0.6); border-radius: 50%; }
+  #speedwrap { position: absolute; right: 18px; bottom: 16px; text-align: right; text-shadow: 0 1px 3px #000; }
+  #speed { font-size: 44px; font-weight: 800; }
+  #speed small { font-size: 16px; color: #cfc9bd; }
+  #carname { font-size: 14px; color: #ffd76a; font-weight: 700; letter-spacing: 1px; }
+  #prompt { position: absolute; left: 50%; bottom: 88px; transform: translateX(-50%); font-size: 15px; font-weight: 700; background: rgba(0,0,0,0.6); padding: 7px 16px; border-radius: 4px; text-shadow: 0 1px 2px #000; }
+  #crosshair { position: absolute; left: 50%; top: 50%; width: 0; height: 0; }
+  #crosshair .dot { position: absolute; left: -2px; top: -2px; width: 4px; height: 4px; background: #fff; border-radius: 50%; box-shadow: 0 0 3px #000; }
+  #crosshair .l { position: absolute; background: rgba(255,255,255,0.9); box-shadow: 0 0 3px #000; }
+  #crosshair .t { left: -1px; top: -14px; width: 2px; height: 9px; }
+  #crosshair .b { left: -1px; top: 5px; width: 2px; height: 9px; }
+  #crosshair .lf { left: -14px; top: -1px; width: 9px; height: 2px; }
+  #crosshair .rt { left: 5px; top: -1px; width: 9px; height: 2px; }
+  #hitmark { position: absolute; left: 50%; top: 50%; width: 30px; height: 30px; margin: -15px 0 0 -15px; opacity: 0; }
+  #hitmark:before, #hitmark:after { content: ""; position: absolute; left: 14px; top: 0; width: 2px; height: 30px; background: #fff; transform: rotate(45deg); }
+  #hitmark:after { transform: rotate(-45deg); }
+  #vignette { position: absolute; inset: 0; background: radial-gradient(ellipse at center, transparent 52%, rgba(255,0,0,0.55) 100%); opacity: 0; }
+  #hint { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); font-size: 12px; color: #cfc9bd; text-shadow: 0 1px 2px #000; }
+  /* panels */
+  .panel { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(8, 12, 22, 0.78); z-index: 10; text-align: center; }
+  .panel h1 { font-size: 64px; letter-spacing: 10px; margin: 0; color: #fff; text-shadow: 0 3px 18px #000; }
+  .panel h1 span { color: #ff5a3c; }
+  .panel h2 { font-size: 16px; letter-spacing: 5px; color: #ffb02e; margin: 8px 0 14px; font-weight: 600; }
+  .panel p { max-width: 600px; font-size: 15px; line-height: 1.65; color: #d8d3c8; margin: 6px 0; padding: 0 20px; }
+  .btn { pointer-events: auto; cursor: pointer; margin-top: 20px; padding: 13px 38px; font-size: 17px; font-weight: 800; letter-spacing: 2px; background: #ff5a3c; color: #fff; border: 0; border-radius: 3px; }
+  .btn:hover { background: #ff7a5c; }
+  .btn.ghost { background: transparent; border: 2px solid #eef1f5; color: #eef1f5; margin-top: 12px; }
+  .keys { display: grid; grid-template-columns: auto auto; gap: 5px 20px; font-size: 14px; text-align: left; margin-top: 18px; color: #cfc9bd; }
+  .keys b { color: #fff; }
+  .tag { font-size: 12px; letter-spacing: 3px; color: #8ec9ee; margin-top: 22px; }
+</style>
+</head>
+<body>
+<div id="app">
+  <canvas id="game" class="game" aria-label="Solmara Heat: an open-world crime game in the coastal city of Solmara Bay"></canvas>
+  <div id="hud">
+    <div id="topleft">
+      <div id="money">$250</div>
+      <div id="clock">09:24</div>
+      <div id="missionlabel">MISSION 1 / 5</div>
+    </div>
+    <div id="objective">Start the story from the menu.</div>
+    <div id="stars">☆☆☆☆☆</div>
+    <div id="feed"></div>
+    <div id="banner"><div id="bannertitle"></div><div id="bannersub"></div></div>
+    <div id="healthwrap">
+      <div id="healthbar"><div id="healthfill"></div></div>
+      <div id="healthtxt">100 HP</div>
+    </div>
+    <canvas id="minimap" width="190" height="190"></canvas>
+    <div id="speedwrap"><div id="speed">0<small> km/h</small></div><div id="carname"></div></div>
+    <div id="prompt"></div>
+    <div id="crosshair"><div class="dot"></div><div class="l t"></div><div class="l b"></div><div class="l lf"></div><div class="l rt"></div></div>
+    <div id="hitmark"></div>
+    <div id="vignette"></div>
+    <div id="hint">WASD move &middot; Mouse look &middot; E steal / enter car &middot; Click shoot &middot; Q switch weapon &middot; Shift sprint &middot; P pause &middot; M mute</div>
+  </div>
+
+  <div id="title" class="panel">
+    <h1>SOLMARA <span>HEAT</span></h1>
+    <h2>AN OPEN-WORLD CRIME STORY</h2>
+    <p>Mara Voss owes the Harbor Kings $2,000, and the Bay PD is always watching.
+    Drive, steal, fight and outrun the law across Solmara Bay — a sun-soaked coastal city
+    of your own, built from scratch. Five chapters. One debt. No way out but through.</p>
+    <button class="btn" id="btnNew">NEW GAME</button>
+    <button class="btn ghost hidden" id="btnContinue">CONTINUE</button>
+    <div class="keys">
+      <span><b>W A S D</b> — move / drive</span><span><b>Mouse</b> — look &amp; aim</span>
+      <span><b>E</b> — steal / enter / exit car</span><span><b>Click</b> — shoot / punch</span>
+      <span><b>Shift</b> — sprint</span><span><b>Space</b> — jump</span>
+      <span><b>Q</b> — switch weapon</span><span><b>P</b> — pause</span>
+    </div>
+    <div class="tag">100% ORIGINAL — SOLMARA BAY &middot; NO REAL-WORLD BRANDS &middot; SAVES LOCALLY</div>
+  </div>
+
+  <div id="paused" class="panel hidden">
+    <h1>PAUSED</h1>
+    <p>Solmara Bay waits for no one — except right now.</p>
+    <button class="btn" id="btnResume">RESUME</button>
+    <button class="btn ghost" id="btnQuit">QUIT TO TITLE</button>
+  </div>
+
+  <div id="dead" class="panel hidden">
+    <h1>FLATLINED</h1>
+    <p>Mara is down. The Harbor Kings do not wait — but the story does. You keep your money and your progress.</p>
+    <button class="btn" id="btnRetry">RETRY MISSION</button>
+    <button class="btn ghost" id="btnDeadTitle">QUIT TO TITLE</button>
+  </div>
+
+  <div id="busted" class="panel hidden">
+    <h1>BUSTED</h1>
+    <p>The Bay PD caught up with Mara. Bail costs $200 and the current job restarts.</p>
+    <button class="btn" id="btnBustedRetry">PAY BAIL &amp; RETRY</button>
+  </div>
+
+  <div id="complete" class="panel hidden">
+    <h1>DEBT <span>PAID</span></h1>
+    <h2>THE TIDE JOB IS DONE</h2>
+    <p>Mara walks out of the warehouse with the van, the money and her name clean.
+    Solmara Bay is hers now — free roam, keep the cars, keep the chaos.</p>
+    <button class="btn" id="btnFreeRoam">FREE ROAM</button>
+  </div>
+  <p id="status" role="status" aria-live="polite"></p>
+</div>
+<script type="importmap">
+{ "imports": { "three": "./vendor/three/three.module.min.js" } }
+</script>
+<script type="module" src="./src/main.js"></script>
+</body>
+</html>
