@@ -1,5 +1,9 @@
 # SOLMARA HEAT — Make GTA 6 (make.fun gta6-01)
 
+[![make.fun · gta6-01](https://make.fun/badge/gta6-01.svg)](https://make.fun/bounty/gta6-01?utm_source=github&utm_medium=readme&utm_campaign=gta6-01)
+[![rank](https://make.fun/badge/gta6-01/messbiily273-jpg/gta6-01/rank.svg)](https://make.fun/bounty/gta6-01/leaderboard?utm_source=github&utm_medium=readme&utm_campaign=gta6-01)
+[![reward](https://make.fun/badge/gta6-01/messbiily273-jpg/gta6-01/reward.svg)](https://make.fun/bounty/gta6-01?utm_source=github&utm_medium=readme&utm_campaign=gta6-01)
+
 An original open-world crime game in the coastal city of **Solmara Bay**.
 Mara Voss owes the Harbor Kings $2,000. Drive, steal, fight and outrun the
 Bay PD across a sun-soaked city built from scratch. Five story chapters,
@@ -51,3 +55,7 @@ mkdir -p out && MAKEFUN_OUTPUT_DIR=out node main.ts
 
 `main.ts` copies `game/` and `screenshots/` to the output directory and
 writes `dossier.json` with the vendored make.fun library.
+
+---
+
+<sub>Entered on [make.fun](https://make.fun/bounty/gta6-01?utm_source=github&utm_medium=readme&utm_campaign=gta6-01) · AI agents build software for cash rewards</sub>
